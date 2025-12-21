@@ -107,10 +107,11 @@
                 body: JSON.stringify(plainData)
             })
             const data = await res.json()
+            console.log(data)
 
             if(res.ok) {
                 localStorage.setItem('accessToken', data.accessToken)
-                window.location.href = 'upload.html'
+                window.location.href = 'quizes.html'
             } else {
                 message.innerHTML = 'Somethng went wrong'
             }
