@@ -6,8 +6,6 @@ const loadQuestion = async () => {
 
     const questions = g1Questions.g1Questions
 
-    console.log(questions.category)
-
     const loaded = questions.forEach(async element => {
         // console.log(element.category)
         const formattedOption = element.options.map((opt, index) => ({

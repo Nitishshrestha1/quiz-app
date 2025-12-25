@@ -24,32 +24,54 @@
         }
 
         /* Options */
-        .option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .btn-option {
+            background-color: white;
+            text-align: left;
+            font-size: 16px;
             padding: 12px 14px;
             margin-bottom: 12px;
             border: 1px solid #ddd;
             border-radius: 8px;
+            width: 100%;
             cursor: pointer;
-            transition: background 0.2s, border 0.2s;
+            transition: background 0.2s ease;
         }
 
-        .option:hover {
+        .btn-option:hover {
             background-color: #f1f1f1;
         }
 
-        .option input[type="radio"] {
-            transform: scale(1.1);
-            cursor: pointer;
+        .correctOption {
+            background-color: #E6F4EA;
+            border: 2px solid #2E7D32;
+            color: #1B5E20;
         }
 
-        /* Button group */
-        .quiz-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 25px;
+        .incorrectOption {
+            background-color: #FDECEA;
+            border: 2px solid #C62828;
+            color: #8E0000;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 17.43px;
+            flex-shrink: 0;
+            height: 17.6px;
+        }
+
+        .btn-optioon:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /*message*/
+        .correctMessage {
+            color: #1B5E20;
+        }
+
+        .incorrectMessage {
+            color: #8E0000;
         }
 
         /* Reusing button philosophy from previous style */
@@ -66,7 +88,7 @@
             box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
         }
 
-        .btn-submit, .btn-restart {
+        .btn-restart {
             background-color: #28a745;
             color: white;
             padding: 10px 18px;
@@ -74,7 +96,7 @@
             font-weight: 600;
         }
 
-        .btn-submit:hover, .btn-restart:hover {
+        .btn-restart:hover {
             background-color: #218838;
             box-shadow: 0 4px 12px rgba(33, 136, 56, 0.4);
         }
@@ -97,133 +119,146 @@
         <h1>Practice Question</h1>
 
         <button class="btn-start" onclick="renderQuestion()">Start</button>
-       <!-- 
-        <p class="question-text">
-            Congratulations you have got 15/20
-        </p>
-        <button class="btn-restart" onclick="renderQuestion()">Restart</button> -->
     </div>
+
 
 
 
     <script>
         let questionNo = 0;
-        let answers = []
-        
+        let question = []
+        let haveQn = false
+        let sessionId
+        let numberOfQuestions = 20
+        const token = localStorage.getItem('accessToken')
+
         const container = document.querySelector('.container')
-        // const form = document.querySelector('#qaForm')
-
-
-        // form.addEventListener('submit', async (e) => {
-        //     e.preventDefault()
-
-        // })
 
         const renderQuestion = async () => {
-            const res = await fetch('/api/quiz/g1')
-            const data = await res.json()
-
-            
-            const question = data.g1Questions
+            if(haveQn === false) {
+                const res = await fetch('/api/quiz/g1', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                const data = await res.json()
+                question = data.questionSet
+                sessionId = data.quizSessionid
+                haveQn = true
+            }
             
             const HTML = `
                 <h1>Practice Question</h1>
 
                 <form id="qaForm" class="quiz-form">
-                <p class="question-text">
+                <p class="question-text" data-question-id="${question[questionNo]._id}">
                     ${question[questionNo].question}
                 </p>
 
-                <label class="option">
-                    <input type="radio" name="answer" value="1">
-                    <span>${question[questionNo].options[0]}</span>
-                </label>
+                <button class="btn-option" data-value="0"><span class="icon">◯</span> ${question[questionNo].option[0]}</button>
+                <button class="btn-option" data-value="1"><span class="icon">◯</span> ${question[questionNo].option[1]}</button>
+                <button class="btn-option" data-value="2"><span class="icon">◯</span> ${question[questionNo].option[2]}</button>
+                <button class="btn-option" data-value="3"><span class="icon">◯</span> ${question[questionNo].option[3]}</button>
+                <p class="message"></p>
 
-                <label class="option">
-                    <input type="radio" name="answer" value="2">
-                    <span>${question[questionNo].options[1]}</span>
-                </label>
-
-                <label class="option">
-                    <input type="radio" name="answer" value="3">
-                    <span>${question[questionNo].options[2]}</span>
-                </label>
-
-                <label class="option">
-                    <input type="radio" name="answer" value="4">
-                    <span>${question[questionNo].options[3]}</span>
-                </label>
-
-                <div class="quiz-buttons">
-                    <button type="button"
-                            class="btn-next js-next-btn"
-                            data-question-id="${question[questionNo].id}">
-                        Next
-                    </button>
-
-                    <button type="submit" class="btn-submit js-btn-submit" onclick='checkAnswer()'>
-                        Submit
-                    </button>
-                </div>
+                <button class="btn-next js-next-btn">
+                   ${questionNo === numberOfQuestions - 1 ?'Result' :'Next'} 
+                </button>
                 </form>
             `
+            container.innerHTML = HTML
+        }
+
+        const showResult = async () => {
+            const res = await fetch(`/api/quiz/g1/result/${sessionId}`, {
+                headers:{
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            const data = await res.json()
+            const score = data
+
+            const HTML = `
+                <p class="question-text">
+                    You got ${score}/20<br>${score>=18 ?'Cogratulation! you have passed' :'You failed but there is always second chance.'}
+                </p>
+                <button class="btn-restart" onclick="restart()">Restart</button>
+                `
 
             container.innerHTML = HTML
         }
 
         container.addEventListener('click', (e) => {
-            if(e.target.classList.contains('js-next-btn')) {
-                questionNo++
-                const btn = document.querySelector('.js-next-btn')
+            const nextBtn = e.target.closest('.js-next-btn')
+            if(!nextBtn) return
+            
+            e.preventDefault()
 
-                let ans
-                const selected = document.querySelector('input[name="answer"]:checked');
-
-                if(selected === null) {
-                    ans = 0
-                } else {
-                    ans = selected.value
-                }
-                
-                answers.push({id: Number(btn.dataset.questionId), answer: Number(ans)})
-
-                renderQuestion()
+            questionNo++
+            if(questionNo === numberOfQuestions) {
+                showResult()
+                return
             }
+            renderQuestion()
         })
 
-        const checkAnswer = async () => {
-            const res = await fetch('/api/quiz/g1/submit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(answers)
-            })
-            const data = await res.json()
-
-            return data.marks
-        }
-
         const restart = () => {
-            answers.length = 0
             questionNo = 0
             renderQuestion()
         }
 
-         container.addEventListener('click', async (e) => {
-            if(e.target.classList.contains('js-btn-submit')) {
-                e.preventDefault()
-                const marks = await checkAnswer()
-                
+        container.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.btn-option')
+            if (!btn) return;
 
-                const HTML = `
-                <p class="question-text">
-                    You got ${marks}/20<br>${marks>=18 ?'Cogratulation! you have passed' :'You failed but there is always second chance.'}
-                </p>
-                <button class="btn-restart" onclick="restart()">Restart</button>
-                `
+            e.preventDefault();
 
-                container.innerHTML = HTML
+            const qn = document.querySelector('.question-text')
+            const allBtn = document.querySelectorAll('.btn-option')
+            const icon = document.querySelectorAll('.icon')
+            const message = document.querySelector('.message')
+
+            const answerValue = Number(btn.dataset.value)
+            const qnid = qn.dataset.questionId
+
+            const answer = {id: qnid, answer: Number(answerValue)}
+
+            const res = await fetch('/api/quiz/g1/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({answer, sessionId})
+            })
+            const data = await res.json()
+
+            const correctIndex = data.correctIndex
+
+            if(correctIndex === answerValue) {
+                btn.classList.add('correctOption')
+                icon[answerValue].innerHTML = '✔'
+
+                allBtn.forEach(b => {
+                b.disabled = true;
+
+                message.classList.add('correctMessage')
+                message.innerHTML = 'Correct'
+            })
+            }
+            else{
+                allBtn[correctIndex].classList.add('correctOption')
+                icon[correctIndex].innerHTML = '✔'
+
+                btn.classList.add('incorrectOption')
+                icon[answerValue].innerHTML = '✖'
+
+                allBtn.forEach(b => {
+                b.disabled = true;
+
+                message.classList.add('incorrectMessage')
+                message.innerHTML = 'Wrong'
+            })
             }
         })
 

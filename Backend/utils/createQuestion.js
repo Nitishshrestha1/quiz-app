@@ -3,7 +3,7 @@ const { questionFormat } = require('../constants')
 
 const createQuestion = async () => {
     let newQuestionSet = []
-    questionFormat.forEach(async element => {
+    for(const element of questionFormat ){
         const qns = await Question.find({category: element.category})
         let numberOfQn = element.numberOfQn
 
@@ -19,8 +19,8 @@ const createQuestion = async () => {
 
             numberOfQn--
         }
-        return newQuestionSet
-    })
+    }
+    return newQuestionSet
 }
 
 module.exports = createQuestion
