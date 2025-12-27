@@ -3,7 +3,8 @@ const router = express.Router()
 const {
     getQuiz,
     checkAnswer,
-    getResult
+    getResult,
+    getSignQuiz
 } = require('../Controllers/quizeController')
 const authintication = require('../middleware/authMiddleware')
 
@@ -13,9 +14,7 @@ router.post('/quiz/g1/submit',authintication, checkAnswer)
 
 router.get('/quiz/g1/result/:sessionId', authintication, getResult)
 
-router.get('/practice/signs', (req,res) => {
-    res.status(200).json({message: 'these are sign questions'})
-})
+router.get('/practice/signs', authintication, getSignQuiz)
 
 router.get('/user/progress', (req,res) => [
     res.status(200).json({message: 'this is your progress'})

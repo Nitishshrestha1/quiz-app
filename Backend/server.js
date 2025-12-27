@@ -4,8 +4,13 @@ const quize = require('./routes/quizeRouter')
 const auth = require('./routes/authRouter')
 const connectDB = require('./config/dbConfig.js')
 const dotenv = require('dotenv').config()
-const loadQuestion = require('./utils/loadQuestions.js')
+// const loadQuestion = require('./utils/loadQuestions.js')
 const errorHandler = require('./middleware/errorHandler.js')
+// const loadQuestion = require('./utils/loadSignQuestions.js')
+
+const createSignQuestion = require('./utils/createSignQuestions.js')
+
+createSignQuestion()
 
 
 

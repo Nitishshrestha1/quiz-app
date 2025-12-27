@@ -5,6 +5,8 @@ const createQuestion = require('../utils/createQuestion.js')
 const { options } = require('../routes/quizeRouter.js')
 const Question = require('../models/Question')
 const QuizAttempt = require('../models/QuizAttempt.js')
+const createSignQuestion = require('../utils/createSignQuestions.js')
+const SignQuestion = require('../models/SignQuestion.js')
 
 //@desc Get quizes
 //@route GET /api/quiz/g1
@@ -96,9 +98,32 @@ const getResult = asyncHandler( async (req,res) => {
     res.status(200).json(marks)
 })
 
+//@desc Get sing related quizes
+//@route GET /api/practice/signs
+//@access private
+const getSignQuiz = asyncHandler( async (req,res) => {
+    const rawQuestionSet = await createSignQuestion()
+
+    const quizSessionid = crypto.randomUUID()
+
+    const attempt = await QuizAttempt.create({
+        userId: req.user.id,
+        quizSessionId: quizSessionid
+    })
+
+    const questionSet = rawQuestionSet.map( q => ({
+        _id: q._id,
+        question: q.question,
+        imageName: q.image.file,
+        option: q.option.map(o => o.text)
+    }))
+    res.status(200).json({questionSet, quizSessionid})
+})
+
 
 module.exports = {
     getQuiz,
     checkAnswer,
-    getResult
+    getResult,
+    getSignQuiz
 }
