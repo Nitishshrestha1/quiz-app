@@ -8,16 +8,11 @@ const dotenv = require('dotenv').config()
 const errorHandler = require('./middleware/errorHandler.js')
 // const loadQuestion = require('./utils/loadSignQuestions.js')
 
-const createSignQuestion = require('./utils/createSignQuestions.js')
-
-createSignQuestion()
-
-
-
 connectDB()
 // loadQuestion()
 const app = express()
 app.use(express.json())
+app.use('/images', express.static(path.join(__dirname, 'data/images')))
 app.use(express.static(path.join('..','frontend')))
 
 app.use('/api', quize)

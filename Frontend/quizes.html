@@ -65,13 +65,9 @@
             opacity: 0.7;
         }
 
-        /*message*/
-        .correctMessage {
-            color: #1B5E20;
-        }
-
-        .incorrectMessage {
-            color: #8E0000;
+        /* sign-image */
+        .sign-image {
+            height: 300px;
         }
 
         /* Reusing button philosophy from previous style */
@@ -115,7 +111,13 @@
 
     </style>
 <body>
-    <div class="container">
+    <div class="left-container">
+        <div class="nav-box">
+            <a href="#">1</a>
+            <a href="#">2</a>
+        </div>
+    </div>
+    <div class="right-container">
         <h1>Practice Question</h1>
 
         <button class="btn-start" onclick="renderQuestion()">Start</button>
@@ -129,24 +131,42 @@
         let question = []
         let haveQn = false
         let sessionId
+        let quizSetId
         let numberOfQuestions = 20
         const token = localStorage.getItem('accessToken')
 
-        const container = document.querySelector('.container')
+        const right_container = document.querySelector('.right-container')
 
         const renderQuestion = async () => {
+            // if(haveQn === false) {
+            //     const res = await fetch('/api/quiz/g1', {
+            //         headers: {
+            //             'Authorization': `Bearer ${token}`
+            //         }
+            //     })
+            //     const data = await res.json()
+            //     console.log(data)
+            //     question = data.questionSet
+            //     sessionId = data.sessionId
+            //     quizSetId = data.quizSetId
+            //     haveQn = true
+            // }
+
             if(haveQn === false) {
-                const res = await fetch('/api/quiz/g1', {
+                const res = await fetch('/api/practice/signs', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 })
                 const data = await res.json()
+                console.log(data)
                 question = data.questionSet
-                sessionId = data.quizSessionid
+                sessionId = data.sessionId
+                quizSetId = data.quizSetId
                 haveQn = true
             }
-            
+
+            const image = question[questionNo].imageName || false
             const HTML = `
                 <h1>Practice Question</h1>
 
@@ -155,18 +175,18 @@
                     ${question[questionNo].question}
                 </p>
 
+                ${image ? `<img class="sign-image" src="/images/${image}" alt="No image">` :''}
                 <button class="btn-option" data-value="0"><span class="icon">◯</span> ${question[questionNo].option[0]}</button>
                 <button class="btn-option" data-value="1"><span class="icon">◯</span> ${question[questionNo].option[1]}</button>
                 <button class="btn-option" data-value="2"><span class="icon">◯</span> ${question[questionNo].option[2]}</button>
                 <button class="btn-option" data-value="3"><span class="icon">◯</span> ${question[questionNo].option[3]}</button>
-                <p class="message"></p>
 
                 <button class="btn-next js-next-btn">
                    ${questionNo === numberOfQuestions - 1 ?'Result' :'Next'} 
                 </button>
                 </form>
             `
-            container.innerHTML = HTML
+            right_container.innerHTML = HTML
         }
 
         const showResult = async () => {
@@ -185,10 +205,10 @@
                 <button class="btn-restart" onclick="restart()">Restart</button>
                 `
 
-            container.innerHTML = HTML
+            right_container.innerHTML = HTML
         }
 
-        container.addEventListener('click', (e) => {
+        right_container.addEventListener('click', (e) => {
             const nextBtn = e.target.closest('.js-next-btn')
             if(!nextBtn) return
             
@@ -207,7 +227,7 @@
             renderQuestion()
         }
 
-        container.addEventListener('click', async (e) => {
+        right_container.addEventListener('click', async (e) => {
             const btn = e.target.closest('.btn-option')
             if (!btn) return;
 
@@ -216,7 +236,6 @@
             const qn = document.querySelector('.question-text')
             const allBtn = document.querySelectorAll('.btn-option')
             const icon = document.querySelectorAll('.icon')
-            const message = document.querySelector('.message')
 
             const answerValue = Number(btn.dataset.value)
             const qnid = qn.dataset.questionId
@@ -229,7 +248,7 @@
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({answer, sessionId})
+            body: JSON.stringify({answer, sessionId, quizSetId})
             })
             const data = await res.json()
 
@@ -241,9 +260,6 @@
 
                 allBtn.forEach(b => {
                 b.disabled = true;
-
-                message.classList.add('correctMessage')
-                message.innerHTML = 'Correct'
             })
             }
             else{
@@ -255,9 +271,6 @@
 
                 allBtn.forEach(b => {
                 b.disabled = true;
-
-                message.classList.add('incorrectMessage')
-                message.innerHTML = 'Wrong'
             })
             }
         })

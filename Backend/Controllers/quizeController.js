@@ -7,49 +7,61 @@ const Question = require('../models/Question')
 const QuizAttempt = require('../models/QuizAttempt.js')
 const createSignQuestion = require('../utils/createSignQuestions.js')
 const SignQuestion = require('../models/SignQuestion.js')
+const QuestionSet = require('../models/QuestionSet.js')
 
 //@desc Get quizes
 //@route GET /api/quiz/g1
 //@access private
 const getQuiz = asyncHandler( async (req,res) => {
-    const rawQuestionSet = await createQuestion()
+    const userId = req.user.id
+    const rawQuestionSet = await createQuestion(userId)
 
-    const quizSessionid = crypto.randomUUID()
+    const quizSetId = rawQuestionSet.questionSetId
 
     const attempt = await QuizAttempt.create({
         userId: req.user.id,
-        quizSessionId: quizSessionid
+        quizSetId: quizSetId
     })
+    const sessionId = attempt._id
 
-    const questionSet = rawQuestionSet.map( q => ({
+    const questionSet = rawQuestionSet.newQuestionSet.map( q => ({
         _id: q._id,
         question: q.question,
         option: q.option.map(o => o.text)
     }))
-    res.status(200).json({questionSet, quizSessionid})
+
+    res.status(200).json({questionSet, quizSetId, sessionId})
 })
 
 //@desc Get your score
-//@route GET /api//quiz/g1/submit
+//@route GET /api/quiz/g1/submit
 //@access private
 const checkAnswer = asyncHandler( async (req,res) => {
-    const {answer, sessionId} = req.body
+    const {answer, sessionId, quizSetId} = req.body
     let isCorrect = false
 
-    const attempt = await QuizAttempt.findOne({quizSessionId: sessionId})
-    if(!attempt || attempt.submitted) {
-        return res.status(400).json({message: 'Invalid attempt'})
-    }
+    const questionSet = await QuestionSet.findOne({_id: quizSetId})
+    if(!questionSet) return res.status(404).json({message: 'Question not found'})
 
-    const qn = await Question.findOne({_id: answer.id})
-    if(!qn) return res.status(404).json({message: 'Question not found'})
-
+    const questions = questionSet.questions
+    const qn = questions.find(qn =>
+        qn.questionId.equals(answer.id)
+    )
+        
     let correctIndex = 0
     for(const index of qn.option) {
         if(index.isCorrect === true) break
         else correctIndex++
     }
+
+    res.status(200).json({correctIndex})
+
     if(correctIndex === answer.answer) isCorrect = true
+
+    const attempt = await QuizAttempt.findOne({_id: sessionId.toString()})
+    if(!attempt || attempt.submitted) {
+        return res.status(400).json({message: 'Invalid attempt'})
+    }
 
     const existingAnswer = attempt.answers.find(
         a => a.questionId.toString() === answer.id
@@ -68,8 +80,6 @@ const checkAnswer = asyncHandler( async (req,res) => {
         })
     }
     await attempt.save()
-
-    res.status(200).json({correctIndex})
 })
 
 //@desc Get quizes
@@ -79,7 +89,7 @@ const getResult = asyncHandler( async (req,res) => {
     const sessionId = req.params.sessionId
     if(!sessionId) res.status(400).json({message: 'There is no sessionId'})
 
-    const quizSession = await QuizAttempt.findOne({quizSessionId: sessionId})
+    const quizSession = await QuizAttempt.findOne({_id: sessionId})
     if(!quizSession) return res.status(400).json({message: 'There is no such session opened'})
     if(req.user.id !== quizSession.userId.toString()) return res.status(400).json({message: 'The session doesnot belong to you'})
     if(quizSession.submitted) return  res.status(400).json({message: 'The quiz has already been attempted before'})
@@ -102,22 +112,25 @@ const getResult = asyncHandler( async (req,res) => {
 //@route GET /api/practice/signs
 //@access private
 const getSignQuiz = asyncHandler( async (req,res) => {
-    const rawQuestionSet = await createSignQuestion()
+    const userId = req.user.id
+    const rawQuestionSet = await createSignQuestion(userId)
 
-    const quizSessionid = crypto.randomUUID()
+    const quizSetId = rawQuestionSet.questionSetId
 
     const attempt = await QuizAttempt.create({
         userId: req.user.id,
-        quizSessionId: quizSessionid
+        quizSetId: quizSetId
     })
+    const sessionId = attempt._id
 
-    const questionSet = rawQuestionSet.map( q => ({
+    const questionSet = rawQuestionSet.newQuestionSet.map( q => ({
         _id: q._id,
         question: q.question,
         imageName: q.image.file,
         option: q.option.map(o => o.text)
     }))
-    res.status(200).json({questionSet, quizSessionid})
+
+    res.status(200).json({questionSet, quizSetId, sessionId})
 })
 
 

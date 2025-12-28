@@ -6,8 +6,8 @@ const quizAtemptScheme = mongoose.Schema({
         ref:'User',
         required: [true, 'There is no user ']
     },
-    quizSessionId: {
-        type: String,
+    quizSetId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: [true, 'QuizSessionId is required']
     },
     answers: [
