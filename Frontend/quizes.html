@@ -10,6 +10,11 @@
             padding: 40px 160px;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
+
+        .container {
+            display: flex
+            
+        }
         /* Quiz specific styles – matches previous dashboard style */
 
         .quiz-form {
@@ -21,6 +26,48 @@
             font-weight: 600;
             margin-bottom: 20px;
             color: #333;
+        }
+
+        /* nav-box */
+        .nav-box {
+            display: grid;
+            grid-template-columns: repeat(4, 30px);
+            gap: 8px;
+            margin-top: 80px;
+            margin-right: 30px;
+        }
+
+        .nav-content{
+            text-decoration: none;
+            color: black;
+            border: 1px solid black;
+            padding: 8px 0px;
+            border-radius: 4px;
+            text-align: center;
+            /* box-shadow: inset 0 0 12px rgba(84, 84, 84, 0.8); */
+        }
+
+        .correct-nav-content {
+            background-color: #E8F5E9;
+            border: 2px solid #2E7D32;
+            color: #1B5E20;
+            box-shadow:
+                inset 0 0 10px rgba(46, 125, 50, 0.35),
+                0 4px 10px rgba(46, 125, 50, 0.25);
+        }
+
+        .incorrect-nav-content {
+            background-color: #FDECEA;
+            border: 2px solid #C62828;
+            color: #8E0000;
+            box-shadow:
+                inset 0 0 10px rgba(198, 40, 40, 0.35),
+                0 4px 10px rgba(198, 40, 40, 0.25);
+        }
+
+        .current-nav-question {
+            color: #424242;
+            text-decoration: underline;
         }
 
         /* Options */
@@ -111,16 +158,13 @@
 
     </style>
 <body>
-    <div class="left-container">
-        <div class="nav-box">
-            <a href="#">1</a>
-            <a href="#">2</a>
+    <div class="container">
+        <div class="left-container">
+            <div class="nav-box">
+            </div>
         </div>
-    </div>
-    <div class="right-container">
-        <h1>Practice Question</h1>
-
-        <button class="btn-start" onclick="renderQuestion()">Start</button>
+        <div class="right-container">
+        </div>
     </div>
 
 
@@ -135,25 +179,32 @@
         let numberOfQuestions = 20
         const token = localStorage.getItem('accessToken')
 
+        const params = new URLSearchParams(window.location.search)
+        const quizType = params.get('quiz')
+
+        console.log(quizType)
+
         const right_container = document.querySelector('.right-container')
+        const nav_box = document.querySelector('.nav-box')
+
+        const renderLeftContainer = () => {
+            let length = question.length
+            
+            let number = 1
+            let HTML = ''
+            while(length>0) {
+                HTML += `
+                    <a class="nav-content" href="#">${number}</a>
+                `
+                number++
+                length--
+            }
+            nav_box.innerHTML = HTML
+        }
 
         const renderQuestion = async () => {
-            // if(haveQn === false) {
-            //     const res = await fetch('/api/quiz/g1', {
-            //         headers: {
-            //             'Authorization': `Bearer ${token}`
-            //         }
-            //     })
-            //     const data = await res.json()
-            //     console.log(data)
-            //     question = data.questionSet
-            //     sessionId = data.sessionId
-            //     quizSetId = data.quizSetId
-            //     haveQn = true
-            // }
-
-            if(haveQn === false) {
-                const res = await fetch('/api/practice/signs', {
+            if( !haveQn && quizType === 'g1') {
+                const res = await fetch('/api/quiz/g1', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -164,7 +215,26 @@
                 sessionId = data.sessionId
                 quizSetId = data.quizSetId
                 haveQn = true
+                renderLeftContainer()
             }
+
+            if( !haveQn && quizType === 'signs') {
+                const res = await fetch('/api/practice/signs', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                const data = await res.json()
+                question = data.questionSet
+                sessionId = data.sessionId
+                quizSetId = data.quizSetId
+                haveQn = true
+                console.log(question.length)
+                renderLeftContainer()
+            }
+
+            const nav_content = document.querySelectorAll('.nav-content')[questionNo]
+            nav_content.classList.add('current-nav-question')
 
             const image = question[questionNo].imageName || false
             const HTML = `
@@ -189,6 +259,8 @@
             right_container.innerHTML = HTML
         }
 
+        renderQuestion()
+
         const showResult = async () => {
             const res = await fetch(`/api/quiz/g1/result/${sessionId}`, {
                 headers:{
@@ -202,7 +274,7 @@
                 <p class="question-text">
                     You got ${score}/20<br>${score>=18 ?'Cogratulation! you have passed' :'You failed but there is always second chance.'}
                 </p>
-                <button class="btn-restart" onclick="restart()">Restart</button>
+                <button class="btn-restart" onclick="returnHome()">Home</button>
                 `
 
             right_container.innerHTML = HTML
@@ -214,17 +286,19 @@
             
             e.preventDefault()
 
+            const nav_content = document.querySelectorAll('.nav-content')[questionNo]
+            nav_content.classList.remove('current-nav-question')
             questionNo++
             if(questionNo === numberOfQuestions) {
+                nav_box.innerHTML = ' '
                 showResult()
                 return
             }
             renderQuestion()
         })
 
-        const restart = () => {
-            questionNo = 0
-            renderQuestion()
+        const returnHome = () => {
+            window.location.href = 'mainpage.html'
         }
 
         right_container.addEventListener('click', async (e) => {
@@ -236,6 +310,7 @@
             const qn = document.querySelector('.question-text')
             const allBtn = document.querySelectorAll('.btn-option')
             const icon = document.querySelectorAll('.icon')
+            const current_nav_content = document.querySelectorAll('.nav-content')[questionNo]
 
             const answerValue = Number(btn.dataset.value)
             const qnid = qn.dataset.questionId
@@ -260,6 +335,8 @@
 
                 allBtn.forEach(b => {
                 b.disabled = true;
+
+                current_nav_content.classList.add('correct-nav-content')
             })
             }
             else{
@@ -271,6 +348,8 @@
 
                 allBtn.forEach(b => {
                 b.disabled = true;
+
+                current_nav_content.classList.add('incorrect-nav-content')
             })
             }
         })

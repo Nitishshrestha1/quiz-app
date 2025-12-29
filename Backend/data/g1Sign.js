@@ -135,7 +135,7 @@ module.exports.g1SignQuestions = [
     },
     options: [
       'Divided highway ahead',
-      'Divided roadway, keep to the right',
+      'Divided roadway ends, keep to the right',
       'Narrow bridge ahead',
       'Road under construction'
     ],
