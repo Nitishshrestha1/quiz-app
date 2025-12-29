@@ -92,6 +92,10 @@
     </div>
 
     <script>
+        const API_BASE_URL =
+          window.location.hostname === 'localhost'
+            ? 'http://localhost:5000'
+            : 'https://quiz-app-xqr3.onrender.com'
         const form = document.querySelector('#registerForm')
         const message = document.querySelector('.message')
 
@@ -100,7 +104,7 @@
             const formdata = new FormData(form)
             const plainData = Object.fromEntries(formdata.entries())
 
-            const res = await fetch('/api/auth/register', {
+            const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
