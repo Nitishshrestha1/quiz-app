@@ -171,6 +171,10 @@
 
 
     <script>
+        const API_BASE_URL =
+          window.location.hostname === 'localhost'
+            ? 'http://localhost:5000'
+            : 'https://quiz-app-xqr3.onrender.com'
         let questionNo = 0;
         let question = []
         let haveQn = false
@@ -204,7 +208,7 @@
 
         const renderQuestion = async () => {
             if( !haveQn && quizType === 'g1') {
-                const res = await fetch('/api/quiz/g1', {
+                const res = await fetch(`${API_BASE_URL}/api/quiz/g1`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -219,7 +223,7 @@
             }
 
             if( !haveQn && quizType === 'signs') {
-                const res = await fetch('/api/practice/signs', {
+                const res = await fetch(`${API_BASE_URL}/api/practice/signs`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -262,7 +266,7 @@
         renderQuestion()
 
         const showResult = async () => {
-            const res = await fetch(`/api/quiz/g1/result/${sessionId}`, {
+            const res = await fetch(`${API_BASE_URL}/api/quiz/g1/result/${sessionId}`, {
                 headers:{
                     'Authorization': `Bearer ${token}`
                 }
@@ -317,7 +321,7 @@
 
             const answer = {id: qnid, answer: Number(answerValue)}
 
-            const res = await fetch('/api/quiz/g1/submit', {
+            const res = await fetch(`${API_BASE_URL}/api/quiz/g1/submit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
