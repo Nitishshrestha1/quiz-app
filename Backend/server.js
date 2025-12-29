@@ -12,10 +12,24 @@ const cors = require('cors')
 connectDB()
 // loadQuestion()
 const app = express()
+
+const allowedOrigins = [
+    'http://localhost:5500',
+    'http://localhost:3000',
+    'https://cerulean-puffpuff-3ee78b.netlify.app'
+]
+
 app.use(cors({
-    origin:  'https://your-frontend-url.vercel.app',
+    origin:  function (origin, callback) {
+        if(!origin || allowedOrigins.includes(origin)){
+            callback(null,true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
     credentials: true
 }))
+
 app.use(express.json())
 app.use('/images', express.static(path.join(__dirname, 'data/images')))
 app.use(express.static(path.join('..','frontend')))
