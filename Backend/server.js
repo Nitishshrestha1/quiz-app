@@ -11,11 +11,11 @@ const cors = require('cors')
 
 connectDB()
 // loadQuestion()
+const app = express()
 app.use(cors({
     origin:  'https://your-frontend-url.vercel.app',
     credentials: true
 }))
-const app = express()
 app.use(express.json())
 app.use('/images', express.static(path.join(__dirname, 'data/images')))
 app.use(express.static(path.join('..','frontend')))
