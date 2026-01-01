@@ -126,7 +126,7 @@ const getSignQuiz = asyncHandler( async (req,res) => {
     const questionSet = rawQuestionSet.newQuestionSet.map( q => ({
         _id: q._id,
         question: q.question,
-        imageName: q.image.file,
+        imageUrl: q.image.url,
         option: q.option.map(o => o.text)
     }))
 

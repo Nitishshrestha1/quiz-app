@@ -18,9 +18,17 @@ const signQuestionSchema = mongoose.Schema({
         immutable: true
     },
     image: {
+        url: {
+            type: String,
+            required: [true, "please add url of image file"]
+        },
+        publicId: {
+            type: String,
+            required: [true, "please add publicId of image file"]
+        },
         file: {
             type: String,
-            required: [true, "please add name of question"]
+            required: [true, "please add name of image file"]
         }
     },
     option: {

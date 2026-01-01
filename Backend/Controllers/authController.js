@@ -39,7 +39,9 @@ const register = asyncHandler( async (req,res) => {
 //@route POST /api/auth/login
 //@access public
 const login = asyncHandler( async (req,res) => {
+    console.log('hello')
     const {email, password} =  req.body
+    
     if(!email || !password) {
         res.status(400)
         throw new Error('All fields are mandatory!')
@@ -47,6 +49,7 @@ const login = asyncHandler( async (req,res) => {
 
     const user = await Users.findOne({email})
 
+    
     if(!user) {
         res.status(404)
         throw new Error('There is no such user')

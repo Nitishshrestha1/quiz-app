@@ -237,10 +237,12 @@
                 renderLeftContainer()
             }
 
+            console.log(question[questionNo].imageUrl)
+
             const nav_content = document.querySelectorAll('.nav-content')[questionNo]
             nav_content.classList.add('current-nav-question')
 
-            const image = question[questionNo].imageName || false
+            const image = question[questionNo].imageUrl || false
             const HTML = `
                 <h1>Practice Question</h1>
 
@@ -249,7 +251,7 @@
                     ${question[questionNo].question}
                 </p>
 
-                ${image ? `<img class="sign-image" src="/images/${image}" alt="No image">` :''}
+                ${image ? `<img class="sign-image" src="${image}" alt="No image">` :''}
                 <button class="btn-option" data-value="0"><span class="icon">◯</span> ${question[questionNo].option[0]}</button>
                 <button class="btn-option" data-value="1"><span class="icon">◯</span> ${question[questionNo].option[1]}</button>
                 <button class="btn-option" data-value="2"><span class="icon">◯</span> ${question[questionNo].option[2]}</button>

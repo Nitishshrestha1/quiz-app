@@ -14,7 +14,7 @@ connectDB()
 const app = express()
 
 const allowedOrigins = [
-    'http://localhost:5500',
+    'http://localhost:5000',
     'http://localhost:3000',
     'https://cerulean-puffpuff-3ee78b.netlify.app'
 ]
